@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Textures/baby_blue.tres" type="Material" id=1]
+
+[node name="2x1_Cilinder" type="CSGCylinder"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+radius = 0.5
+height = 2.0
+sides = 32
+material = ExtResource( 1 )
