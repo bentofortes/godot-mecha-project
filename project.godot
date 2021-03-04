@@ -24,6 +24,15 @@ config/name="3d collision 2"
 run/main_scene="res://Scenes/Maps/Test.tscn"
 config/icon="res://icon.png"
 
+[display]
+
+window/size/width=1920
+window/size/height=1080
+window/size/test_width=1284
+window/size/test_height=720
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
+
 [input]
 
 d={
@@ -59,6 +68,11 @@ control={
 space={
 "deadzone": 0.5,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":32,"unicode":0,"echo":false,"script":null)
+ ]
+}
+b={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":66,"unicode":0,"echo":false,"script":null)
  ]
 }
 
