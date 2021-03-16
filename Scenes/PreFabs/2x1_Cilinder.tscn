@@ -4,6 +4,9 @@
 
 [node name="2x1_Cilinder" type="CSGCylinder"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+use_collision = true
+collision_layer = 3075
+collision_mask = 3075
 radius = 0.5
 height = 2.0
 sides = 32

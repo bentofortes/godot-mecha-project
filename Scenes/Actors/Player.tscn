@@ -1,40 +1,95 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://Textures/player_colour.tres" type="Material" id=1]
 [ext_resource path="res://Scripts/Player/player.gd" type="Script" id=2]
 [ext_resource path="res://Scripts/Player/Camera.gd" type="Script" id=3]
 [ext_resource path="res://Scripts/Misc/Collision.gd" type="Script" id=4]
+[ext_resource path="res://Sprites/hud_box.png" type="Texture" id=5]
+[ext_resource path="res://Textures/transparent.tres" type="Material" id=6]
+[ext_resource path="res://Sprites/3d_crosshair.png" type="Texture" id=7]
+[ext_resource path="res://Scenes/HUD.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Sprites/small_3d_box.png" type="Texture" id=9]
 
 [sub_resource type="CylinderShape" id=1]
+height = 3.5
 
 [sub_resource type="SpatialMaterial" id=2]
-albedo_color = Color( 0.431373, 0.109804, 0.109804, 0 )
+render_priority = 127
+flags_transparent = true
+flags_unshaded = true
+flags_no_depth_test = true
+params_blend_mode = 1
+params_cull_mode = 2
+
+[sub_resource type="BoxShape" id=3]
+extents = Vector3( 4, 3, 1 )
+
+[sub_resource type="SpatialMaterial" id=4]
+flags_transparent = true
+flags_unshaded = true
+flags_no_depth_test = true
+params_blend_mode = 1
+params_cull_mode = 2
 
 [node name="Player" type="KinematicBody"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 0 )
+collision_mask = 2147483649
 script = ExtResource( 2 )
 
 [node name="Collision" type="CollisionShape" parent="."]
-transform = Transform( -8.14603e-08, 0, -0.5, 0, 1, 0, 0.5, 0, -8.14603e-08, 0, 0, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0 )
 shape = SubResource( 1 )
 script = ExtResource( 4 )
 
 [node name="Model" type="CSGBox" parent="Collision"]
 transform = Transform( 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0 )
 width = 1.0
+height = 3.5
 depth = 1.0
 material = ExtResource( 1 )
 
-[node name="CameraArm" type="CSGBox" parent="."]
-transform = Transform( -1.62921e-07, 0.34202, -0.939693, 0, 0.939693, 0.34202, 1, 5.57222e-08, -1.53095e-07, 0, 0.8, 0 )
+[node name="3D_HUD" type="Spatial" parent="Collision"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.75, 4 )
+
+[node name="box" type="Sprite3D" parent="Collision/3D_HUD"]
+transform = Transform( 1.4, 0, 0, 0, 1.3, 0, 0, 0, 1, 0, 4, 0 )
+material_override = SubResource( 2 )
+texture = ExtResource( 5 )
+
+[node name="boxFixedHud" type="StaticBody" parent="Collision/3D_HUD/box"]
+input_ray_pickable = false
+collision_layer = 32
+collision_mask = 32
+
+[node name="CollisionShape" type="CollisionShape" parent="Collision/3D_HUD/box/boxFixedHud"]
+transform = Transform( 1, 0, -4.54747e-14, 0, 1, 0, 4.54747e-13, 0, 0.1, 0, 0, 0.1 )
+shape = SubResource( 3 )
+
+[node name="crosshair3D" type="Sprite3D" parent="Collision/3D_HUD/box"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10 )
 visible = false
+material_override = SubResource( 4 )
+texture = ExtResource( 9 )
+
+[node name="closest_box_3d" type="Sprite3D" parent="Collision/3D_HUD/box"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7 )
+material_override = SubResource( 4 )
+texture = ExtResource( 7 )
+
+[node name="CameraArm" type="CSGBox" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.984808, -0.173648, 0, 0.173648, 0.984808, 0, 4, 1 )
 width = 0.3
 height = 0.3
 depth = 8.0
-material = SubResource( 2 )
+material = ExtResource( 6 )
 
 [node name="Camera" type="Camera" parent="CameraArm"]
-transform = Transform( 1, 1.06581e-13, -2.70006e-13, -1.03029e-13, 1, -2.68221e-07, 2.98428e-13, 2.38419e-07, 1, 6.51683e-07, 0.229397, 4.3402 )
+transform = Transform( -1, 1.69407e-21, -3.25841e-07, -3.55271e-14, 1, 1.04308e-07, 3.25841e-07, 1.04308e-07, -1, 0, 0.15, -5.8 )
 current = true
 fov = 90.0
+far = 1000.0
 script = ExtResource( 3 )
+
+[node name="HUD" parent="CameraArm/Camera" instance=ExtResource( 8 )]
+
+[node name="main" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 3, 0 )

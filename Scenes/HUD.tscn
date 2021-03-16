@@ -1,0 +1,45 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Sprites/crosshair.png" type="Texture" id=1]
+[ext_resource path="res://Sprites/hud_box_large.png" type="Texture" id=2]
+
+[node name="HUD" type="Control"]
+margin_right = 1920.0
+margin_bottom = 1080.0
+mouse_filter = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Control" type="Control" parent="."]
+margin_right = 167.0
+margin_bottom = 167.0
+mouse_filter = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LockBox" type="TextureRect" parent="Control"]
+margin_left = -83.5
+margin_top = -83.5
+margin_right = 83.5
+margin_bottom = 83.5
+mouse_filter = 2
+texture = ExtResource( 2 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="crosshair" type="TextureRect" parent="."]
+visible = false
+margin_right = 20.0
+margin_bottom = 20.0
+rect_scale = Vector2( 3, 3 )
+rect_pivot_offset = Vector2( 15, 15 )
+mouse_filter = 2
+texture = ExtResource( 1 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
