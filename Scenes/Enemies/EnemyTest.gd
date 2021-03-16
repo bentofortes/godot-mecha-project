@@ -33,12 +33,16 @@ var prev_state = states.non
 
 func _handle_timers(delta):
 	if (!in_fixed and !in_hud) or obstructed:
-		lock_count -= delta * 2.0/3
+		lock_count -= delta
 		lock_count = max(lock_count, 0)
 	
 	elif (in_fixed and !in_hud) or (!in_fixed and in_hud):
-		lock_count += delta
-		lock_count = min(lock_count, LOCK_TIMER)
+		if (lock_count <= LOCK_TIMER):
+			lock_count += delta
+			lock_count = min(lock_count, LOCK_TIMER)
+		else:
+			lock_count -= delta
+			lock_count = max(lock_count, LOCK_TIMER)
 		
 	elif (in_fixed and in_hud):
 		lock_count += delta
@@ -59,7 +63,7 @@ func _handle_timers(delta):
 		if (state == states.non):
 			state = states.soft_locking
 			lockHud.inner.modulate.a = 0.5
-		elif (state == states.soft_locked):
+		elif (state in [states.soft_locked, states.hard_unlocking]):
 			state = states.soft_unlocking
 			lockHud.inner.modulate.a = 1
 		
@@ -70,8 +74,10 @@ func _handle_timers(delta):
 		lockHud.outer.visible = false
 		
 	elif (lock_count > LOCK_TIMER and lock_count < FULL_LOCK_TIMER):
-		if (state == states.soft_locked):
-			lockHud.outer.visible = true
+		lockHud.inner.visible = true
+		lockHud.inner.modulate.a = 1
+		lockHud.outer.visible = true
+		if (state in [states.soft_locked, states.soft_locking]):
 			state = states.hard_locking
 			lockHud.outer.modulate.a = 0.5
 		elif (state == states.hard_locked):
@@ -82,10 +88,11 @@ func _handle_timers(delta):
 		state = states.hard_locked
 		lockHud.inner.visible = true
 		lockHud.outer.visible = true
+		lockHud.inner.modulate.a = 1
 		lockHud.outer.modulate.a = 1
-#
-#	if (prev_state != state):
-#		print(states.keys()[prev_state], " -> ", states.keys()[state], lock_count)
+
+	if (prev_state != state):
+		print(states.keys()[prev_state], " -> ", states.keys()[state], lock_count)
 
 
 func _check_regular_obstructions(state, from, to):
@@ -93,6 +100,7 @@ func _check_regular_obstructions(state, from, to):
 	if (result):
 		if (result.collider):
 			obstructed = true
+
 
 func _check_fixed_box(state, from, to):
 	var result = state.intersect_ray(from, to, [], 32)
@@ -115,10 +123,13 @@ func _physics_process(delta):
 		
 	in_fixed = false
 	in_hud = false
+	obstructed = false
 		
 	var space_state = get_world().direct_space_state
 	var from = self.global_transform.origin
 	var to = camera.global_transform.origin
+	
+	if (from.distance_squared_to(to) > pow(500, 2)): return
 	
 	_check_regular_obstructions(space_state, from, to)
 	_check_fixed_box(space_state, from, to)

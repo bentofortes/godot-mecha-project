@@ -23,7 +23,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2, -12 )
 
 [node name="EnemyTest2" parent="EnemiesParent" instance=ExtResource( 6 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2, 8 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 60, 8 )
 
 [node name="Floor" parent="." instance=ExtResource( 1 )]
 transform = Transform( 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, -0.25, 0 )
@@ -98,6 +98,6 @@ material = ExtResource( 4 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( -0.819152, -0.469846, 0.32899, 0, 0.573576, 0.819152, -0.573576, 0.67101, -0.469846, 0, 38, -14 )
-light_energy = 0.4
+light_energy = 0.1
 
 [editable path="Floor"]
