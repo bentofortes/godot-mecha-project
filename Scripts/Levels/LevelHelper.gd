@@ -16,6 +16,7 @@ func _ready():
 		enemy.camera = camera
 		enemy.player = player
 		enemy.hud = hud
+		
 		if (visibility):
 			visibility.connect("screen_entered", camera, "lock_on_enemies", [enemy])
 			visibility.connect("screen_exited", camera, "unlock_specific", [enemy])

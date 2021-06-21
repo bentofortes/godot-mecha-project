@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Scripts/Player/Weapons/missile.gd" type="Script" id=1]
+
+[sub_resource type="CapsuleShape" id=1]
+radius = 0.1
+height = 0.6
+
+[sub_resource type="SpatialMaterial" id=2]
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_color = Color( 1, 0.772549, 0, 1 )
+
+[node name="Missile" type="KinematicBody"]
+collision_layer = 2147483648
+collision_mask = 3075
+script = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, -8.9407e-08, 0, 8.9407e-08, 1, 0, 0, 0 )
+shape = SubResource( 1 )
+
+[node name="CSGCylinder" type="CSGCylinder" parent="."]
+transform = Transform( 1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0 )
+material_override = SubResource( 2 )
+radius = 0.05
+height = 0.5
+sides = 12
+
+[node name="Position3D" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1 )
+
+[node name="Explosion" type="CSGSphere" parent="."]
+visible = false
+radius = 5.0
+material = SubResource( 3 )

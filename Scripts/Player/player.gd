@@ -15,7 +15,8 @@ const SCREEN_H = 1920/SHRINK
 
 const MOUSE_SENSITIVITY = 0.01
 const MOVE_ACCELERATION = 0.8
-const MOVE_INERTIA = 0.6 #0.5
+const MOVE_INERTIA_GROUND = 0.6 #0.5
+const MOVE_INERTIA_AIR = 0.1 #0.5
 const MOVE_SPEED = 16
 const HYPOTENUSE_MOVE_SPEED = sqrt(2 * pow(16, 2))
 const CONCURRENT_SCALE = 1.0/sqrt(2)
@@ -55,14 +56,22 @@ var velocity = Vector3()
 var residual_v = Vector3()
 var horizontal_v = Vector3()
 var boost = 1
+var move_inertia = MOVE_INERTIA_GROUND
 
 
 const MAIN_COOL_MAX = 0.08
+const MISSILE_COOL_MAX = 2.0
 var mainCool = 0
+var missileCool = 0
 
 
 var mainProjectile = preload("res://Scenes/PreFabs/Main_Projectile.tscn")
 var ProjectileTest = preload("res://Scenes/PreFabs/Projectile_test.tscn")
+var Missiles = preload("res://Scenes/PreFabs/MissileCluster.tscn")
+
+
+var soft_locked_list = []
+var hard_locked_list = []
 
 
 onready var parent = self.get_parent()
@@ -70,6 +79,7 @@ onready var hurtBox = $Collision
 onready var cameraArm = $CameraArm
 onready var camera :CustomCamera = $CameraArm/Camera
 onready var mainPos :Position3D = $main
+onready var missilePos :Position3D = $missile
 
 onready var view = get_viewport()
 
@@ -111,41 +121,14 @@ func _unhandled_input(event):
 		boost = 1
 
 	if (event is InputEventMouseMotion):
-		var aux = view.get_mouse_position()
-		if (aux.x <= SCREEN_PAN_INNER_H):
-			if (aux.x <= SCREEN_PAN_OUTER_H):
-				aux.x = SCREEN_PAN_OUTER_H
-				view.warp_mouse(aux)
-			camera_target_rotation_h = abs(aux.x - SCREEN_PAN_INNER_H)/PAN_DIFF_H
-			
-		elif (aux.x >= SCREEN_H - SCREEN_PAN_INNER_H):
-			if (aux.x >= SCREEN_H - SCREEN_PAN_OUTER_H):
-				aux.x = SCREEN_H - SCREEN_PAN_OUTER_H
-				view.warp_mouse(aux)
-			camera_target_rotation_h = -abs(aux.x - (SCREEN_H - SCREEN_PAN_INNER_H))/PAN_DIFF_H
-			
-		else:
-			camera_target_rotation_h = 0
-			
-		if (aux.y <= SCREEN_PAN_INNER_V):
-			if (aux.y <= SCREEN_PAN_OUTER_V):
-				aux.y = SCREEN_PAN_OUTER_V
-				view.warp_mouse(aux)
-			camera_target_rotation_v = -abs(aux.y - SCREEN_PAN_INNER_V)/PAN_DIFF_V
-			
-		elif (aux.y >= SCREEN_V - SCREEN_PAN_INNER_V):
-			if (aux.y >= SCREEN_V - SCREEN_PAN_OUTER_V):
-				aux.y = SCREEN_V - SCREEN_PAN_OUTER_V
-				view.warp_mouse(aux)
-			camera_target_rotation_v = abs(aux.y - (SCREEN_V - SCREEN_PAN_INNER_V))/PAN_DIFF_V
-			
-		else:
-			camera_target_rotation_v = 0
+		_handle_mouse_movement()
 
 
 func _get_input():
 	if (Input.is_action_pressed("lClick")):
 		self._shoot_main()
+	if (Input.is_action_pressed("rClick")):
+		self._shoot_missiles()
 		
 	velocity = Vector3()
 	
@@ -155,6 +138,7 @@ func _get_input():
 		input_y_axis = min(input_y_axis, JUMP_SPEED)
 	if (Input.is_action_just_pressed("space")) and self.is_on_floor():
 		is_moving_y = true
+		move_inertia = MOVE_INERTIA_AIR
 		input_y_axis += 8 * JUMP_ACCELERATION
 		input_y_axis = min(input_y_axis, JUMP_SPEED)
 	
@@ -212,8 +196,8 @@ func _get_input():
 		
 	var aux = residual_v.length()
 	if aux > 0:
-		residual_v = residual_v.normalized() * (aux - MOVE_INERTIA)
-		if aux - MOVE_INERTIA < 1:
+		residual_v = residual_v.normalized() * (aux - move_inertia)
+		if aux - move_inertia < 1:
 			residual_v = Vector3()
 		
 	horizontal_v = input_x_vector + input_z_vector + residual_v
@@ -222,7 +206,8 @@ func _get_input():
 		horizontal_v = horizontal_v.normalized() * MOVE_SPEED * boost
 	
 	velocity = Vector3(horizontal_v.x,input_y_axis,horizontal_v.z)
-	
+
+
 func _physics_process(delta):
 	_get_input()
 	camera.place_crosshair()
@@ -244,7 +229,9 @@ func _physics_process(delta):
 				input_x_vector.x = 0
 				input_z_vector.z = 0
 	
-	if (self.is_on_floor()): is_moving_y = false
+	if (self.is_on_floor()):
+		move_inertia = MOVE_INERTIA_GROUND
+		is_moving_y = false
 	target_rotation = 0
 	is_moving_x = false
 	is_moving_z = false
@@ -259,8 +246,7 @@ func _custom_rotate():
 		
 	
 func _shoot_main():
-	if (mainCool != 0):
-		return
+	if (mainCool != 0): return
 
 	var mouse_pos = get_viewport().get_mouse_position()
 	var from = camera.project_ray_origin(mouse_pos)
@@ -285,14 +271,67 @@ func _shoot_main():
 	return
 
 
+func _shoot_missiles():
+	if (missileCool != 0): return
+	if (hard_locked_list.size() == 0): return
+
+	missileCool = MISSILE_COOL_MAX
+	print("missiles")
+	
+	var cluster = Missiles.instance()
+	parent.add_child(cluster)
+	cluster.global_transform = self.global_transform
+	cluster.global_transform.origin = missilePos.global_transform.origin
+	cluster.targets = self.hard_locked_list
+	cluster.update_targets()
+	
+	
+
+
 func _manage_cooldowns(increment):
 	if (
-		mainCool == 0
+		mainCool == 0 and
+		missileCool == 0
 	):
 		return
 		
 	mainCool -= increment
 	mainCool = max(0, mainCool)
+	
+	missileCool -= increment
+	missileCool = max(0, missileCool)
 
+
+func _handle_mouse_movement():
+	var aux = view.get_mouse_position()
+	if (aux.x <= SCREEN_PAN_INNER_H):
+		if (aux.x <= SCREEN_PAN_OUTER_H):
+			aux.x = SCREEN_PAN_OUTER_H
+			view.warp_mouse(aux)
+		camera_target_rotation_h = abs(aux.x - SCREEN_PAN_INNER_H)/PAN_DIFF_H
+		
+	elif (aux.x >= SCREEN_H - SCREEN_PAN_INNER_H):
+		if (aux.x >= SCREEN_H - SCREEN_PAN_OUTER_H):
+			aux.x = SCREEN_H - SCREEN_PAN_OUTER_H
+			view.warp_mouse(aux)
+		camera_target_rotation_h = -abs(aux.x - (SCREEN_H - SCREEN_PAN_INNER_H))/PAN_DIFF_H
+		
+	else:
+		camera_target_rotation_h = 0
+		
+	if (aux.y <= SCREEN_PAN_INNER_V):
+		if (aux.y <= SCREEN_PAN_OUTER_V):
+			aux.y = SCREEN_PAN_OUTER_V
+			view.warp_mouse(aux)
+		camera_target_rotation_v = -abs(aux.y - SCREEN_PAN_INNER_V)/PAN_DIFF_V
+		
+	elif (aux.y >= SCREEN_V - SCREEN_PAN_INNER_V):
+		if (aux.y >= SCREEN_V - SCREEN_PAN_OUTER_V):
+			aux.y = SCREEN_V - SCREEN_PAN_OUTER_V
+			view.warp_mouse(aux)
+		camera_target_rotation_v = abs(aux.y - (SCREEN_V - SCREEN_PAN_INNER_V))/PAN_DIFF_V
+		
+	else:
+		camera_target_rotation_v = 0
 
 

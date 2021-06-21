@@ -22,6 +22,9 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5 )
 [node name="EnemyTest" parent="EnemiesParent" instance=ExtResource( 6 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2, -12 )
 
+[node name="EnemyTest3" parent="EnemiesParent" instance=ExtResource( 6 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2, 2 )
+
 [node name="EnemyTest2" parent="EnemiesParent" instance=ExtResource( 6 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 60, 8 )
 
